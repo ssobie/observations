@@ -50,24 +50,24 @@ make_year_file <- function(var.name,files,year,dates,
 
 ##Test first with one year
 
+years <- 1950:2019
+var.name <- "pr"
+aplin.prefix <- "pcp60_"
 
-
-
-tmp.dir <- '/local_temp/ssobie/aplin/'
+tmp.dir <- paste0('/local_temp/ssobie/aplin/',var.name,'/')
 if(!file.exists(tmp.dir)) {
   dir.create(tmp.dir,recursive=TRUE)
 }
 
-years <- 2016:2018
-var.name <- "tasmax"
-aplin.prefix <- "maxt60_"
+
 proj.dir <- paste0("/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/incoming/anusplin_2km_monthly/",var.name,'_added/')
-write.dir <- "/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/incoming/anusplin_2km_monthly/tasmax/"
+write.dir <- paste0("/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/monthly/",var.name,'/')
+
 for (yr in years) {
   yr.dir <- paste0(proj.dir,yr,'/')
   year.dates <- seq(from=as.Date(paste0(yr,'-01-01')),by='month',to=as.Date(paste0(yr,'-12-31')))
   print(yr)
-  files <- sort(list.files(path=yr.dir,pattern='asc'))
+  files <- sort(list.files(path=yr.dir,pattern='tif'))
 
   file.copy(from=paste0(yr.dir,files),to=tmp.dir)
 

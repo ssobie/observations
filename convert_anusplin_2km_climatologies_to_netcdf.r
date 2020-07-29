@@ -4,10 +4,10 @@ library(raster)
 library(ncdf4)
 
 
-make_year_file <- function(var.name,files,year,dates,
+make_clim_file <- function(var.name,files,dates,
                            tmp.dir) {
 
-  write.file <- paste0(var.name,"_monthly_ANUSPLIN_60ARCSEC_",year,".nc")
+  write.file <- paste0(var.name,"_monthly_climatologies_ANUSPLIN_60ARCSEC_1981-2010.nc")
 
   r.list <- vector(mode='list',length=length(files))
 
@@ -35,7 +35,10 @@ make_year_file <- function(var.name,files,year,dates,
   y.geog <- ncdim_def('lat', 'degrees_north', lat)
   t.geog <- ncdim_def('time', time.units, as.numeric(time.vals),
                         unlim=TRUE, calendar=time.calendar)
-  var.units <- switch(var.name,pr='mm',tasmax='degC',tasmin='degC')
+  var.units <- switch(var.name,
+                      tasmax='degC',
+                      tasmin='degC',
+                      pr='mm')
   var.geog <- ncvar_def(var.name, units=var.units, dim=list(x.geog, y.geog, t.geog),
                         missval=-32768)
   file.nc <- nc_create(paste0(tmp.dir,write.file), var.geog)
@@ -50,33 +53,29 @@ make_year_file <- function(var.name,files,year,dates,
 
 ##Test first with one year
 
-
-
-
+proj.dir <- "/storage/data/climate/observations/gridded/incoming/anusplin_2km_climatology/asciigrids/"
+write.dir <- "/storage/data/climate/observations/gridded/incoming/anusplin_2km_climatology/netcdf/"
 tmp.dir <- '/local_temp/ssobie/aplin/'
 if(!file.exists(tmp.dir)) {
   dir.create(tmp.dir,recursive=TRUE)
 }
 
-years <- 2016:2018
-var.name <- "tasmax"
-aplin.prefix <- "maxt60_"
-proj.dir <- paste0("/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/incoming/anusplin_2km_monthly/",var.name,'_added/')
-write.dir <- "/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/incoming/anusplin_2km_monthly/tasmax/"
-for (yr in years) {
-  yr.dir <- paste0(proj.dir,yr,'/')
-  year.dates <- seq(from=as.Date(paste0(yr,'-01-01')),by='month',to=as.Date(paste0(yr,'-12-31')))
-  print(yr)
-  files <- sort(list.files(path=yr.dir,pattern='asc'))
+months <- 1:12
+var.name <- "pr"
+aplin.prefix <- "pcp60_"
 
-  file.copy(from=paste0(yr.dir,files),to=tmp.dir)
 
-  nc.file <- make_year_file(var.name,files,yr,year.dates,
-                            tmp.dir)
+mon.dates <- seq(from=as.Date(paste0(1995,'-01-01')),by='month',to=as.Date(paste0(1995,'-12-01')))
 
-  file.copy(from=paste0(tmp.dir,nc.file),to=write.dir,overwrite=TRUE)  
+asc.files <- sort(list.files(path=proj.dir,pattern='asc'))
+var.files <- asc.files[grep(aplin.prefix,asc.files)]
+
+file.copy(from=paste0(proj.dir,var.files),to=tmp.dir)
+nc.file <- make_clim_file(var.name,var.files,mon.dates,
+                          tmp.dir)
+file.copy(from=paste0(tmp.dir,nc.file),to=write.dir,overwrite=TRUE)  
                  
-}
+
 
 
 

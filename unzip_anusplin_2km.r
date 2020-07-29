@@ -1,30 +1,32 @@
 ##Script to unzip the downloaded 2km files
 
-proj.dir <- '/storage/data/climate/observations/gridded/incoming/'
+proj.dir <- '/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/incoming/monthly_zip_files/'
 
 
-write.dir <- '/storage/data/climate/observations/gridded/incoming/anusplin_2km_monthly/'
-
-
+var.name <- 'tasmin'
+aplin.var <- 'mint'
 tmp.dir <- '/local_temp/ssobie/aplin/'
 
 if (!file.exists(tmp.dir)) {
    dir.create(tmp.dir,recursive=TRUE)
 }
 
-##file.copy(from=proj.dir,to=tmp.dir,overwrite=TRUE,recursive=TRUE)
+zip.files <- list.files(path=proj.dir,pattern=aplin.var,full.name=T)
 
-zip.files <- list.files(path=paste0(tmp.dir,'incoming'),pattern='arcsec.zip')
-exdir <- paste0(tmp.dir,'incoming/anusplin_2km_monthly/')
+file.copy(from=zip.files,to=tmp.dir,overwrite=TRUE)
+
+exdir <- paste0(tmp.dir,var.name,'_added/')
 for (zip.file in zip.files) {
-   print(zip.file)
-   file.names <- unzip(paste0(proj.dir,zip.file),list=TRUE)
-   ix <- grep('asc',file.names$Name)
-   asc.file <- file.names$Name[ix]
-   unzip(paste0(proj.dir,zip.file),files=asc.file,exdir=exdir)
+   print(basename(zip.file))
+   file.names <- unzip(paste0(tmp.dir,basename(zip.file)),list=TRUE)
+   ix <- grep('tif',file.names$Name)
+   tif.file <- file.names$Name[ix]
+   unzip(paste0(proj.dir,basename(zip.file)),files=tif.file,exdir=exdir)  
+
 }
 
-file.copy(from=paste0(tmp.dir,'incoming/anusplin_2km_monthly/'),
-          to='/storage/data/climate/observations/gridded/incoming/',
+file.copy(from=paste0(tmp.dir,var.name,'_added/'),
+          to='/storage/data/climate/observations/gridded/ANUSPLIN/ANUSPLIN_60ARCSEC/incoming/anusplin_2km_monthly/',
           recursive=TRUE,overwrite=TRUE)
 
+file.remove(paste0(tmp.dir,zip.files))
